@@ -102,6 +102,7 @@ func init() {
 	}
 }
 
+// Parse puzzle slice into square options form
 func parseToPuzzle(puzzle [][]uint) (SquareOptions, error) {
 
 	var err error
@@ -125,13 +126,10 @@ func parseToPuzzle(puzzle [][]uint) (SquareOptions, error) {
 		values[square] = digits
 	}
 
-	// Get grid filled with values
+	// Sometimes we can just solve the puzzle lol
 	for s, d := range grid {
-		//Test each allowed digit
 		for _, xd := range digits {
-			//If the GridMap square's value is an allowed digit (not just a blank placeholder)
 			if d == string(xd) {
-				//Try to assign that value
 				values, err = assign(values, s, d)
 				if err != nil {
 					return nil, err
@@ -239,6 +237,11 @@ func eliminate(values SquareOptions, s Square, d string) (SquareOptions, error) 
 func SolvePuzzle(puzzle [][]uint) ([][]uint, error) {
 	solved := [][]uint{}
 	values, err := parseToPuzzle(puzzle)
+	possibilities := convertMapToSlice(values)
+	out := Display(possibilities)
+	fmt.Println("Middle State:")
+	fmt.Println(out)
+
 	if err != nil {
 		return solved, err
 	}
@@ -253,7 +256,7 @@ func SolvePuzzle(puzzle [][]uint) ([][]uint, error) {
 	return solved, nil
 }
 
-// Convert the solved map into slice form
+// Convert squareoptions form into slice
 func convertMapToSlice(puzzleMap SquareOptions) [][]uint {
 	translation := make([][]uint, 9)
 	for i := range translation {
@@ -333,18 +336,31 @@ func cloneSquareOptions(state SquareOptions) SquareOptions {
 	return cpySquareOptions
 }
 
-// Displace the slice as a puzzle in ticktaktoe like form
+//Nicely display puzzles
 func Display(state [][]uint) string {
 	var out string
+	max := 0
+	for i := 0; i < len(state); i++ {
+		for j := 0; j < len(state[0]); j++ {
+			square := strconv.Itoa(int(state[uint(i)][uint(j)]))
+			if max <= len(square) {
+				max = len(square)
+			}
+		}
+	}
+	max = max + 1
+	lineLength := (max * 9) + 9 + 6
+	squareFormatStr := "%" + strconv.Itoa(max) + "s"
 	for i := 0; i < len(state); i++ {
 		if i == 3 || i == 6 {
-			out = out + " -----------------------\n"
+			out = out + strings.Repeat("-", lineLength) + "\n"
 		}
 		for j := 0; j < len(state[0]); j++ {
 			if j == 3 || j == 6 {
-				out = out + " | "
+				out = out + " |"
 			}
-			out = out + " " + strconv.Itoa(int(state[uint(i)][uint(j)]))
+			square := strconv.Itoa(int(state[uint(i)][uint(j)]))
+			out = out + " " + fmt.Sprintf(squareFormatStr, square)
 		}
 		out = out + "\n"
 	}
