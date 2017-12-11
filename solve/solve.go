@@ -236,12 +236,29 @@ func eliminate(values SquareOptions, s Square, d string) (SquareOptions, error) 
 }
 func SolvePuzzle(puzzle [][]uint) ([][]uint, error) {
 	solved := [][]uint{}
-	values, err := parseToPuzzle(puzzle)
-	possibilities := convertMapToSlice(values)
-	out := Display(possibilities)
-	fmt.Println("Middle State:")
-	fmt.Println(out)
 
+	// Check puzzle size
+	if len(puzzle) == 9 {
+		for i := 0; i < len(puzzle); i++ {
+			row := puzzle[i]
+			if len(row) != 9 {
+				err := errors.New(fmt.Sprintf("Invalid column(col %d, length %d). Needs to be length 9.", i, len(row)))
+				return solved, err
+			}
+			for j := 0; j < len(puzzle[i]); j++ {
+				square := puzzle[i][j]
+				if square > 10 || square < 0 {
+					err := errors.New(fmt.Sprintf("Invalid Square(%d,%d = %d).Must be between 0 and 9", i, j, square))
+					return solved, err
+				}
+			}
+		}
+	} else {
+		err := errors.New(fmt.Sprintf("Invalid amount of rows (%d). Need 9.", len(puzzle)))
+		return solved, err
+	}
+
+	values, err := parseToPuzzle(puzzle)
 	if err != nil {
 		return solved, err
 	}
@@ -323,7 +340,7 @@ func search(state SquareOptions, err error) (SquareOptions, error) {
 		}
 	}
 
-	return nil, errors.New("Your depth-first search failed on this branch.")
+	return nil, errors.New("Search failed.")
 }
 
 //Clone the state
