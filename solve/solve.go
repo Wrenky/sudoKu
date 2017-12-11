@@ -234,30 +234,106 @@ func eliminate(values SquareOptions, s Square, d string) (SquareOptions, error) 
 
 	return values, nil
 }
-func SolvePuzzle(puzzle [][]uint) ([][]uint, error) {
-	solved := [][]uint{}
 
-	// Check puzzle size
+func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
+
+	var row uint
+	var col uint
+	err := validatePuzzleSize(puzzle)
+	if err != nil {
+		return [][]uint{}, row, col, err
+	}
+
+	// get the possbility map
+	values, err := parseToPuzzle(puzzle)
+	if err != nil {
+		return [][]uint{}, row, col, nil
+	}
+
+	// Find the value with the most possiblities
+	max := 0
+	longSquare := ""
+	for square, value := range values {
+		if max <= len(value) {
+			longSquare = string(square)
+			max = len(value)
+		}
+	}
+
+	// Get our coordinates to update the puzzle at
+	row, col, err = getCoords(Square(longSquare))
+	if err != nil {
+		return [][]uint{}, row, col, err
+	}
+	fmt.Printf("Square(%s) with length %d is at %d, %d\n", longSquare, max, row, col)
+
+	solveMap, err := search(values, nil)
+	if err != nil {
+		return [][]uint{}, row, col, err
+	}
+
+	solved := convertMapToSlice(solveMap)
+	puzzle[row][col] = solved[row][col]
+	return puzzle, row, col, nil
+}
+
+func getCoords(coordinate Square) (row uint, col uint, err error) {
+	if len(coordinate) != 2 {
+		return row, col, errors.New(fmt.Sprintf("Coordinate %s is invalid length", coordinate))
+	}
+	rowString := string(coordinate[0])
+	colString := string(coordinate[1])
+	found := false
+	index := 0
+	for i, letter := range rows {
+		if rowString == string(letter) {
+			found = true
+			index = i
+			break
+		}
+	}
+	colInt, _ := strconv.Atoi(colString)
+	row = uint(index)
+	col = uint(colInt - 1)
+	if !found {
+		return row, col, errors.New(fmt.Sprintf("Coordinate %s is invalid letter", rowString))
+	}
+	return row, col, nil
+}
+
+func validatePuzzleSize(puzzle [][]uint) error {
 	if len(puzzle) == 9 {
 		for i := 0; i < len(puzzle); i++ {
 			row := puzzle[i]
 			if len(row) != 9 {
 				err := errors.New(fmt.Sprintf("Invalid column(col %d, length %d). Needs to be length 9.", i, len(row)))
-				return solved, err
+				return err
 			}
 			for j := 0; j < len(puzzle[i]); j++ {
 				square := puzzle[i][j]
 				if square > 10 || square < 0 {
 					err := errors.New(fmt.Sprintf("Invalid Square(%d,%d = %d).Must be between 0 and 9", i, j, square))
-					return solved, err
+					return err
 				}
 			}
 		}
 	} else {
 		err := errors.New(fmt.Sprintf("Invalid amount of rows (%d). Need 9.", len(puzzle)))
+		return err
+	}
+
+	return nil
+}
+
+func SolvePuzzle(puzzle [][]uint) ([][]uint, error) {
+	solved := [][]uint{}
+
+	err := validatePuzzleSize(puzzle)
+	if err != nil {
 		return solved, err
 	}
 
+	// Check puzzle size
 	values, err := parseToPuzzle(puzzle)
 	if err != nil {
 		return solved, err

@@ -55,5 +55,9 @@ func main() {
 			fmt.Println(output)
 		}
 		fmt.Println("----------------------------------------------------------")
+		hintedPuzzle, row, col, err := solve.Hint(puzzle)
+		fmt.Printf("Getting a hint, post hint puzzle(%d,%d):\n", row, col)
+		output := solve.Display(hintedPuzzle)
+		fmt.Println(output)
 	}
 }
