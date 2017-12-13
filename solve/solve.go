@@ -13,6 +13,16 @@ import (
 	"strings"
 )
 
+type puzzleError struct {
+	msg string
+	row uint
+	col uint
+}
+
+func (e *puzzleError) Error() string {
+	return e.msg
+}
+
 //The name of a square, which is the discrete entity that needs to be filled
 type Square string
 
@@ -126,13 +136,18 @@ func parseToPuzzle(puzzle [][]uint) (SquareOptions, error) {
 		values[square] = digits
 	}
 
-	// Sometimes we can just solve the puzzle lol
+	// Sometimes we can just solve a puzzle based on the known constraints lol
 	for s, d := range grid {
-		for _, xd := range digits {
-			if d == string(xd) {
+		for _, dig := range digits {
+			if d == string(dig) {
 				values, err = assign(values, s, d)
 				if err != nil {
-					return nil, err
+					row, col, _ := getCoords(s)
+					return nil, &puzzleError{
+						msg: err.Error(),
+						row: row,
+						col: col,
+					}
 				}
 			}
 		}
@@ -190,7 +205,8 @@ func eliminate(values SquareOptions, s Square, d string) (SquareOptions, error) 
 
 	//If we have no more options, then we picked wrong. Fail.
 	if len(values[s]) == 0 {
-		return nil, errors.New(fmt.Sprintf("Cannot eliminate %s from values[%s] because now values[%s] has no valid potential digits (valid: %s).", d, s, s, values[s]))
+		row, col, _ := getCoords(s)
+		return nil, errors.New(fmt.Sprintf("Cannot eliminate %s from square at (%d,%d) as this would remove all potential digits.", d, row, col))
 	} else if len(values[s]) == 1 {
 		// if only one thing is left, then this is the solution! (For this branch)
 		d2 := values[s]
@@ -226,7 +242,7 @@ func eliminate(values SquareOptions, s Square, d string) (SquareOptions, error) 
 			//D must go into dPlaces[0]
 			_, err = assign(values, dPlaces[0], d)
 			if err != nil {
-				//If it can't, you'll have to backtrack (or you have an insoluble puzzle, depending on nesting depth)
+				// Now we backtrack! Might just be a bad puzzle.
 				return nil, err
 			}
 		}
@@ -247,7 +263,14 @@ func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
 	// get the possbility map
 	values, err := parseToPuzzle(puzzle)
 	if err != nil {
-		return [][]uint{}, row, col, nil
+		if pe, ok := err.(*puzzleError); ok {
+			err = &puzzleError{
+				msg: fmt.Sprintf("Contradiction at (%d,%d) (value %d). Unable to resolve.", pe.row, pe.col, puzzle[pe.row][pe.col]),
+				row: pe.row,
+				col: pe.col,
+			}
+		}
+		return [][]uint{}, row, col, err
 	}
 
 	// Find the value with the most possiblities
@@ -265,7 +288,6 @@ func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
 	if err != nil {
 		return [][]uint{}, row, col, err
 	}
-	fmt.Printf("Square(%s) with length %d is at %d, %d\n", longSquare, max, row, col)
 
 	solveMap, err := search(values, nil)
 	if err != nil {
