@@ -1,5 +1,4 @@
 /*
-
 Follows the method from Peter Norvig's essay: http://norvig.com/sudoku.html
 Uses constraint propagation and depth first search.
 */
@@ -283,12 +282,25 @@ func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
 		}
 	}
 
-	// Get our coordinates to update the puzzle at
-	row, col, err = getCoords(Square(longSquare))
-	if err != nil {
-		return [][]uint{}, row, col, err
+	// Puzzle was solved by Parse to Map
+	if max == 1 {
+		fmt.Println("Gotta pick the first zero!")
+		for i := 0; i < len(puzzle); i++ {
+			for j := 0; j < len(puzzle[i]); j++ {
+				if puzzle[i][j] == 0 {
+					row = uint(i)
+					col = uint(j)
+					break
+				}
+			}
+		}
+	} else {
+		// Puzzle is gonna need to be solved for this value!
+		row, col, err = getCoords(Square(longSquare))
+		if err != nil {
+			return [][]uint{}, row, col, err
+		}
 	}
-
 	solveMap, err := search(values, nil)
 	if err != nil {
 		return [][]uint{}, row, col, err
