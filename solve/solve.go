@@ -15,8 +15,8 @@ import (
 
 type puzzleError struct {
 	msg string
-	row uint
-	col uint
+	Row uint
+	Col uint
 }
 
 func (e *puzzleError) Error() string {
@@ -145,8 +145,8 @@ func parseToPuzzle(puzzle [][]uint) (SquareOptions, error) {
 					row, col, _ := getCoords(s)
 					return nil, &puzzleError{
 						msg: err.Error(),
-						row: row,
-						col: col,
+						Row: row,
+						Col: col,
 					}
 				}
 			}
@@ -265,9 +265,9 @@ func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
 	if err != nil {
 		if pe, ok := err.(*puzzleError); ok {
 			err = &puzzleError{
-				msg: fmt.Sprintf("Contradiction at (%d,%d) (value %d). Unable to resolve.", pe.row, pe.col, puzzle[pe.row][pe.col]),
-				row: pe.row,
-				col: pe.col,
+				msg: fmt.Sprintf("Contradiction at (%d,%d) (value %d). Unable to resolve.", pe.Row, pe.Col, puzzle[pe.Row][pe.Col]),
+				Row: pe.Row,
+				Col: pe.Col,
 			}
 		}
 		return [][]uint{}, row, col, err
