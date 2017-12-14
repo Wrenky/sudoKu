@@ -284,7 +284,6 @@ func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
 
 	// Puzzle was solved by Parse to Map
 	if max == 1 {
-		fmt.Println("Gotta pick the first zero!")
 		for i := 0; i < len(puzzle); i++ {
 			for j := 0; j < len(puzzle[i]); j++ {
 				if puzzle[i][j] == 0 {
