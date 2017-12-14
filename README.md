@@ -1,14 +1,29 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [sudoKu](#sudoku)
+  - [Getting Started](#getting-started)
+- [Exposed Functions and Types](#exposed-functions-and-types)
+  - [SolvePuzzle](#solvepuzzle)
+  - [Hint](#hint)
+  - [Display](#display)
+  - [PuzzleError](#puzzleerror)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # sudoKu
-A library to help solve sudoKu puzzles, written in Go.
+A library to help solve sudoKu puzzles, written in Go. Implements [Peter Norvig's ideas about constraint propagation and search applied to sudoku.](http://norvig.com/sudoku.html) Its a great read, I highly recommend it!
+Created for CSE682, and intended to work with Ryan Milbourne's API [syr-dudoku-backend](https://github.com/ryanbmilbourne/syr-sudoku-backend) and Carl Poole's android app.
 
 
 ## Getting Started
-Simpily just import this module, then you are ready to start using methods!
+Simply just import this module, then you are ready to start using its methods!
 
 
-## Exposed functions
+# Exposed Functions and Types
 
-### SolvePuzzle
+## SolvePuzzle
  ```SolvePuzzle(puzzle [][]uint) (solvedPuzzle [][]uint,err error)```
 SolvePuzzle is your main call into sudoKu! it takes a 2d slice of uints and returns a solved 2d slice of uints, or an error. 
 For example, this block:
@@ -75,7 +90,7 @@ Solved puzzle
 ```
 
 
-### Hint
+## Hint
  ```Hint(puzzle [][]uint) (updatedPuzzle [][]uint, row uint, col uint, err error)```
 Hint takes a puzzle, and returns and updated puzzle and the row/col values + an error. This error can be a PuzzleErorr!
 ```
@@ -132,14 +147,12 @@ Getting a hint, post hint puzzle(8,0):
 ```
 indexes are 0-indexed, so check the bottom-left corner.
 
-### Display
+## Display
  ```Display(state [][]uint) string```
  Display allows us to see our puzzle in a nice grid. Simpily pass it the uint 2d slice, and it will return a nice string.
  See all other sections for display examples!
 
-## Exposed Types
-
-### PuzzleError
+## PuzzleError
 ``` 
 type PuzzleError struct {
 	msg string
@@ -189,5 +202,3 @@ Pre-hint puzzle:
 Puzzled! At (7,0): Contradiction at (7,0) (value 3). Unable to resolve.Getting a hint, post hint puzzle(0,0):
 
 ```
-
-
