@@ -92,14 +92,15 @@ func init() {
 		}
 	}
 
+	// Set linked squares for this instance
 	linkedSquares = map[Square][]Square{}
 	for square, regions := range linkedRegions {
 		for _, unit := range regions {
 		NextlinkedRegionsquare:
 			for _, linkedRegionsquare := range unit {
 				if linkedRegionsquare != square {
-					for _, ps := range linkedSquares[square] {
-						if ps == linkedRegionsquare {
+					for _, previousSquare := range linkedSquares[square] {
+						if previousSquare == linkedRegionsquare {
 							continue NextlinkedRegionsquare
 						}
 					}
@@ -123,25 +124,28 @@ func parseToPuzzle(puzzle [][]uint) (SquareOptions, error) {
 			value := strconv.FormatUint(uint64(puzzle[row][col]), 10)
 			squareDex := ((row) * len(puzzle)) + (col)
 			if value == "0" {
+				// No value here
 				grid[squares[squareDex]] = "."
 			} else {
+				// Set the square to the default
 				grid[squares[squareDex]] = value
 			}
 		}
 	}
 
-	// Popuate values.
+	// Set each square to have all digits
 	for _, square := range squares {
 		values[square] = digits
 	}
 
-	// Sometimes we can just solve a puzzle based on the known constraints lol
+	// Here, we iterate over grid and values, and assign them. Sometimes we can just solve a puzzle based on the known constraints lol
 	for s, d := range grid {
 		for _, dig := range digits {
 			if d == string(dig) {
 				values, err = assign(values, s, d)
 				if err != nil {
 					row, col, _ := getCoords(s)
+					// If we fail to solve the puzzle here, we need to propgate it out.
 					return nil, &PuzzleError{
 						msg: err.Error(),
 						Row: row,
@@ -172,7 +176,7 @@ func assign(state SquareOptions, s Square, d string) (SquareOptions, error) {
 		otherSquareOptions = otherSquareOptions + string(v)
 	}
 
-	// Eliminate values
+	// Eliminate values!
 	if len(otherSquareOptions) > 0 {
 		for _, d2 := range otherSquareOptions {
 			if _, err := eliminate(state, s, string(d2)); err != nil {
@@ -250,6 +254,7 @@ func eliminate(values SquareOptions, s Square, d string) (SquareOptions, error) 
 	return values, nil
 }
 
+// Returns a hint. Might return a puzzle error!
 func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
 
 	var row uint
@@ -310,6 +315,7 @@ func Hint(puzzle [][]uint) ([][]uint, uint, uint, error) {
 	return puzzle, row, col, nil
 }
 
+// Get a squares 2d slice coordinates, ie, "A1" == 0,0
 func getCoords(coordinate Square) (row uint, col uint, err error) {
 	if len(coordinate) != 2 {
 		return row, col, errors.New(fmt.Sprintf("Coordinate %s is invalid length", coordinate))
@@ -368,6 +374,7 @@ func SolvePuzzle(puzzle [][]uint) ([][]uint, error) {
 
 	// Check puzzle size
 	values, err := parseToPuzzle(puzzle)
+	fmt.Printf("Square Possibilities after Constraint Propagation:\n%s\n", Display(convertMapToSlice(values)))
 	if err != nil {
 		return solved, err
 	}
@@ -382,7 +389,7 @@ func SolvePuzzle(puzzle [][]uint) ([][]uint, error) {
 	return solved, nil
 }
 
-// Convert squareoptions form into slice
+// Convert our possibility map into slice
 func convertMapToSlice(puzzleMap SquareOptions) [][]uint {
 	translation := make([][]uint, 9)
 	for i := range translation {
@@ -452,17 +459,16 @@ func search(state SquareOptions, err error) (SquareOptions, error) {
 	return nil, errors.New("Search failed.")
 }
 
-//Clone the state
+//Clone the squareOptions, this allows us to preserve out map through the recusrion
 func cloneSquareOptions(state SquareOptions) SquareOptions {
 	cpySquareOptions := make(SquareOptions, len(state))
 	for k, v := range state {
 		cpySquareOptions[k] = v
 	}
-
 	return cpySquareOptions
 }
 
-//Nicely display puzzles
+//Display puzzles nicely!
 func Display(state [][]uint) string {
 	var out string
 	max := 0
@@ -482,10 +488,15 @@ func Display(state [][]uint) string {
 			out = out + strings.Repeat("-", lineLength) + "\n"
 		}
 		for j := 0; j < len(state[0]); j++ {
+			square := ""
 			if j == 3 || j == 6 {
 				out = out + " |"
 			}
-			square := strconv.Itoa(int(state[uint(i)][uint(j)]))
+			if state[i][j] == 0 {
+				square = "."
+			} else {
+				square = strconv.Itoa(int(state[uint(i)][uint(j)]))
+			}
 			out = out + " " + fmt.Sprintf(squareFormatStr, square)
 		}
 		out = out + "\n"

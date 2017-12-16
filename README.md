@@ -16,10 +16,16 @@
 A library to help solve sudoKu puzzles, written in Go. Implements [Peter Norvig's ideas about constraint propagation and search applied to sudoku.](http://norvig.com/sudoku.html) Its a great read, I highly recommend it!
 Created for CSE682, and intended to work with Ryan Milbourne's API [syr-dudoku-backend](https://github.com/ryanbmilbourne/syr-sudoku-backend) and Carl Poole's android app.
 
-
 ## Getting Started
-Simply just import this module, then you are ready to start using its methods!
-
+To use this library, simpily call
+```go get github.com/Wrenky/sudoKu/solve``` 
+and the go tool will place it correctly inside your gopath. To use, just add the import statement:
+```
+import (
+	"github.com/Wrenky/sudoKu/solve"
+)
+```
+From here, you can simply just call the functions you need, or create a simple main package to use as demonstrated in the sections below.
 
 # Exposed Functions and Types
 
